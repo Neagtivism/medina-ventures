@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medina Ventures — AI Systems for Local Businesses</title>
+<meta name="description" content="Medina Ventures builds AI-powered phone and chat systems that help local businesses capture every lead, plus tools that turn happy customers into public reviews.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f1526'/%3E%3Ctext x='32' y='45' font-family='Georgia, serif' font-size='34' fill='%23c9a468' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0a0a0c;
+    --surface:#0e1424;
+    --surface-border:rgba(201,164,104,0.14);
+    --gold:#c9a468;
+    --gold-bright:#ddc08a;
+    --text:#f2f0ea;
+    --text-muted:#98a0b3;
+    --font-serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-sans);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+  img{max-width:100%;display:block;}
+  a{color:inherit;}
+
+  .container{
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  /* Top bar */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:rgba(10,10,12,0.72);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    border-bottom:1px solid transparent;
+  }
+  .topbar-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 24px;
+    max-width:1100px;
+    margin:0 auto;
+  }
+  .brandmark{
+    font-family:var(--font-serif);
+    font-size:1rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--text);
+    text-decoration:none;
+  }
+  .topbar a.cta-link{
+    font-size:0.9rem;
+    color:var(--text-muted);
+    text-decoration:none;
+    letter-spacing:0.02em;
+    transition:color 0.2s ease;
+  }
+  .topbar a.cta-link:hover{color:var(--gold-bright);}
+
+  /* Hero */
+  .hero{
+    min-height:88vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:8vh 24px 10vh;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(201,164,104,0.07), transparent 65%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, rgba(20,32,64,0.5), transparent 70%),
+      var(--bg);
+  }
+  .wordmark{
+    font-family:var(--font-serif);
+    font-weight:400;
+    font-size:clamp(2.6rem, 6vw, 4.5rem);
+    letter-spacing:0.01em;
+    color:var(--text);
+    text-wrap:balance;
+  }
+  .divider{
+    width:64px;
+    height:1px;
+    background:var(--gold);
+    margin:28px auto;
+    opacity:0.85;
+  }
+  .tagline{
+    font-size:clamp(1.05rem, 2vw, 1.3rem);
+    color:var(--text-muted);
+    max-width:38ch;
+    margin:0 auto 40px;
+  }
+
+  .btn{
+    display:inline-block;
+    padding:14px 34px;
+    font-size:0.95rem;
+    letter-spacing:0.04em;
+    text-decoration:none;
+    border-radius:2px;
+    transition:all 0.2s ease;
+  }
+  .btn-primary{
+    background:var(--gold);
+    color:#0a0a0c;
+    font-weight:600;
+    border:1px solid var(--gold);
+  }
+  .btn-primary:hover{
+    background:var(--gold-bright);
+    border-color:var(--gold-bright);
+  }
+
+  /* Sections */
+  .section{
+    padding:110px 24px;
+  }
+  .section-alt{
+    background:var(--surface);
+    border-top:1px solid var(--surface-border);
+    border-bottom:1px solid var(--surface-border);
+  }
+  .section-heading{
+    font-family:var(--font-serif);
+    font-size:clamp(1.6rem, 3vw, 2.1rem);
+    font-weight:400;
+    text-align:center;
+    margin-bottom:8px;
+    text-wrap:balance;
+  }
+  .section-heading-rule{
+    width:40px;
+    height:1px;
+    background:var(--gold);
+    margin:20px auto 44px;
+    opacity:0.8;
+  }
+  .section-body{
+    max-width:640px;
+    margin:0 auto;
+    text-align:center;
+    color:var(--text-muted);
+    font-size:1.05rem;
+  }
+
+  /* Services */
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:1px;
+    background:var(--surface-border);
+    max-width:960px;
+    margin:0 auto;
+    border:1px solid var(--surface-border);
+  }
+  .card{
+    background:var(--bg);
+    padding:44px 32px 40px;
+    text-align:left;
+    border-top:2px solid transparent;
+    transition:border-color 0.25s ease;
+  }
+  .card:hover, .card:focus-within{
+    border-top-color:var(--gold);
+  }
+  .card h3{
+    font-family:var(--font-serif);
+    font-weight:400;
+    font-size:1.25rem;
+    margin-bottom:12px;
+    text-wrap:balance;
+  }
+  .card p{
+    color:var(--text-muted);
+    font-size:0.96rem;
+  }
+
+  /* Contact */
+  .contact-links{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:16px;
+    margin-top:40px;
+  }
+  .contact-item{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:16px 28px;
+    border:1px solid var(--surface-border);
+    text-decoration:none;
+    color:var(--text);
+    font-size:0.98rem;
+    letter-spacing:0.01em;
+    transition:border-color 0.2s ease, color 0.2s ease;
+  }
+  .contact-item:hover{
+    border-color:var(--gold);
+    color:var(--gold-bright);
+  }
+  .contact-label{
+    color:var(--gold);
+    font-size:0.75rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+  }
+
+  /* Footer */
+  footer{
+    padding:36px 24px;
+    text-align:center;
+    color:var(--text-muted);
+    font-size:0.82rem;
+    letter-spacing:0.03em;
+    border-top:1px solid var(--surface-border);
+  }
+
+  @media (max-width:760px){
+    .cards{grid-template-columns:1fr;}
+    .section{padding:80px 20px;}
+    .hero{min-height:auto;padding-top:14vh;padding-bottom:14vh;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{transition:none !important;}
+  }
+
+  a:focus-visible, .card:focus-within{
+    outline:1px solid var(--gold);
+    outline-offset:3px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="#top" class="brandmark">Medina Ventures</a>
+      <a href="#contact" class="cta-link">Get in Touch →</a>
+    </div>
+  </div>
+
+  <header class="hero" id="top">
+    <h1 class="wordmark">Medina Ventures</h1>
+    <div class="divider"></div>
+    <p class="tagline">AI-powered systems for businesses that don't have time to wait.</p>
+    <a href="#contact" class="btn btn-primary">Book a Call</a>
+  </header>
+
+  <section class="section" id="what-we-do">
+    <div class="container">
+      <h2 class="section-heading">What We Do</h2>
+      <div class="section-heading-rule"></div>
+      <p class="section-body">
+        Medina Ventures builds custom AI phone and chat systems that help local businesses
+        capture every lead and never miss a customer inquiry. We also build review generation
+        tools that turn satisfied customers into public reviews, automatically.
+      </p>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="services">
+    <div class="container">
+      <h2 class="section-heading">Services</h2>
+      <div class="section-heading-rule"></div>
+      <div class="cards">
+        <div class="card">
+          <h3>AI Chat Systems</h3>
+          <p>Always-on chat that qualifies leads and books appointments while you focus on running the business.</p>
+        </div>
+        <div class="card">
+          <h3>AI Phone / Voice Agents</h3>
+          <p>Natural-sounding voice agents that answer every call, capture the details, and follow up — day or night.</p>
+        </div>
+        <div class="card">
+          <h3>Review &amp; Reputation Tools</h3>
+          <p>Simple systems that make it effortless for happy customers to leave a review, so your reputation grows on its own.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contact">
+    <div class="container">
+      <h2 class="section-heading">Get in Touch</h2>
+      <div class="section-heading-rule"></div>
+      <p class="section-body">
+        Tell us a bit about your business and we'll get back to you shortly.
+      </p>
+      <div class="contact-links">
+        <a class="contact-item" href="mailto:contactmedinaventures@gmail.com">
+          <span class="contact-label">Email</span>&nbsp; contactmedinaventures@gmail.com
+        </a>
+        <a class="contact-item" href="tel:+15166906289">
+          <span class="contact-label">Phone</span>&nbsp; (516) 690-6289
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Medina Ventures &copy; 2026
+  </footer>
+
+</body>
+</html>
