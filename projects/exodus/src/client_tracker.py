@@ -112,65 +112,103 @@ _DASHBOARD_TEMPLATE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Exodus Dashboard</title>
+<title>Exodus — Client Ledger</title>
 <style>
   :root {{
-    --bg: #f7f7f5; --surface: #ffffff; --border: #e5e5e0;
-    --text: #1a1a1a; --text-muted: #6b6b66; --accent: #2f6f4f;
-  }}
-  @media (prefers-color-scheme: dark) {{
-    :root {{
-      --bg: #121212; --surface: #1a1a1a; --border: #2e2e2e;
-      --text: #f2f2f0; --text-muted: #9a9a95; --accent: #7fd9a8;
-    }}
+    --ink: #0a0a0c;
+    --hairline: rgba(201,164,104,0.14);
+    --gold: #c9a468;
+    --gold-bright: #ddc08a;
+    --text: #f2f0ea;
+    --text-muted: #98a0b3;
+    --good: #7fae7a;
+    --warn: #c98a4d;
+    --bad: #c0665f;
+    --font-serif: 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --font-sans: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   }}
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{
-    background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    padding: 32px 20px; line-height: 1.5;
+    background: var(--ink); color: var(--text);
+    font-family: var(--font-sans); line-height: 1.55;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    padding: 48px 24px 72px;
   }}
-  .container {{ max-width: 880px; margin: 0 auto; }}
-  h1 {{ font-size: 1.4rem; margin-bottom: 4px; }}
-  .subtitle {{ color: var(--text-muted); font-size: 0.85rem; margin-bottom: 28px; }}
-  .stats {{ display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }}
-  .stat-card {{
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    padding: 16px 20px; min-width: 140px; flex: 1;
+  .page {{ max-width: 720px; margin: 0 auto; }}
+  header {{
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--hairline); padding-bottom: 20px; margin-bottom: 40px;
   }}
-  .stat-value {{ font-size: 1.6rem; font-weight: 600; color: var(--accent); }}
-  .stat-label {{ font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }}
-  table {{
-    width: 100%; border-collapse: collapse; background: var(--surface);
-    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  .wordmark {{ font-family: var(--font-serif); font-size: 1.15rem; letter-spacing: 0.02em; color: var(--gold-bright); }}
+  .wordmark span {{ color: var(--text-muted); font-family: var(--font-sans); font-size: 0.8rem; margin-left: 8px; }}
+  .generated {{ font-size: 0.75rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }}
+
+  .hero-label {{
+    font-family: var(--font-serif); font-style: italic; font-size: 0.85rem;
+    color: var(--text-muted); margin-bottom: 6px;
   }}
-  .table-wrap {{ overflow-x: auto; border-radius: 10px; }}
-  th, td {{ text-align: left; padding: 10px 14px; font-size: 0.88rem; border-bottom: 1px solid var(--border); }}
-  th {{ color: var(--text-muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }}
+  .hero-value {{
+    font-size: 3.4rem; font-weight: 600; color: var(--gold);
+    font-variant-numeric: tabular-nums; line-height: 1; text-wrap: balance;
+  }}
+  .fleet-line {{
+    font-size: 0.88rem; color: var(--text-muted); margin: 14px 0 44px;
+    font-variant-numeric: tabular-nums;
+  }}
+  .fleet-line b {{ color: var(--text); font-weight: 600; }}
+  .dot {{ display: inline-block; width: 7px; height: 7px; border-radius: 50%; }}
+  .fleet-line .dot {{ margin-left: 14px; margin-right: 5px; }}
+  .dot-good {{ background: var(--good); }}
+  .dot-warn {{ background: var(--warn); }}
+  .dot-bad {{ background: var(--bad); }}
+
+  .section-label {{
+    font-family: var(--font-serif); font-style: italic; font-size: 0.85rem;
+    color: var(--text-muted); margin-bottom: 14px;
+  }}
+  .table-wrap {{ overflow-x: auto; }}
+  table {{ width: 100%; border-collapse: collapse; }}
+  th {{
+    text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted); font-weight: 500; padding: 0 16px 10px 0;
+    border-bottom: 1px solid var(--hairline); white-space: nowrap;
+  }}
+  td {{
+    padding: 14px 16px 14px 0; font-size: 0.9rem; border-bottom: 1px solid var(--hairline);
+    vertical-align: middle; white-space: nowrap;
+  }}
   tr:last-child td {{ border-bottom: none; }}
-  .status {{ padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; }}
-  .status-active {{ background: rgba(47,111,79,0.15); color: var(--accent); }}
-  .status-paused {{ background: rgba(180,140,20,0.15); color: #b48c14; }}
-  .status-canceled {{ background: rgba(180,40,40,0.15); color: #b42828; }}
-  .empty {{ color: var(--text-muted); text-align: center; padding: 24px; }}
+  .biz {{ color: var(--text); font-weight: 500; }}
+  .status {{ display: inline-flex; align-items: center; font-size: 0.82rem; color: var(--text-muted); }}
+  .status .dot {{ margin-right: 6px; }}
+  .rate {{ font-variant-numeric: tabular-nums; color: var(--text-muted); }}
+  .growth {{ font-variant-numeric: tabular-nums; }}
+  .growth-up {{ color: var(--good); }}
+  .growth-flat {{ color: var(--text-muted); }}
+  .growth-detail {{ color: var(--text-muted); font-size: 0.85rem; }}
+  .empty {{ color: var(--text-muted); font-style: italic; }}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Exodus — Client Dashboard</h1>
-  <div class="subtitle">Generated {generated_at} · read-only snapshot</div>
-  <div class="stats">
-    <div class="stat-card"><div class="stat-value">${mrr}</div><div class="stat-label">MRR</div></div>
-    <div class="stat-card"><div class="stat-value">{total_clients}</div><div class="stat-label">Total clients</div></div>
-    <div class="stat-card"><div class="stat-value">{active_count}</div><div class="stat-label">Active</div></div>
-    <div class="stat-card"><div class="stat-value">{paused_count}</div><div class="stat-label">Paused</div></div>
-    <div class="stat-card"><div class="stat-value">{canceled_count}</div><div class="stat-label">Canceled</div></div>
+<div class="page">
+  <header>
+    <div class="wordmark">Exodus<span>client ledger</span></div>
+    <div class="generated">{generated_at}</div>
+  </header>
+
+  <div class="hero-label">Monthly recurring revenue</div>
+  <div class="hero-value">${mrr}</div>
+  <div class="fleet-line">
+    <b>{total_clients}</b> client{plural} on the books
+    <span class="dot dot-good"></span>{active_count} active
+    <span class="dot dot-warn"></span>{paused_count} paused
+    <span class="dot dot-bad"></span>{canceled_count} canceled
   </div>
+
+  <div class="section-label">Review growth by client</div>
   <div class="table-wrap">
   <table>
-    <thead>
-      <tr><th>Business</th><th>Status</th><th>Rate</th><th>Review growth</th></tr>
-    </thead>
+    <thead><tr><th>Business</th><th>Status</th><th>Rate</th><th>Growth</th></tr></thead>
     <tbody>
 {table_rows}
     </tbody>
@@ -181,21 +219,29 @@ _DASHBOARD_TEMPLATE = """<!doctype html>
 </html>
 """
 
+_STATUS_DOT = {"active": "dot-good", "paused": "dot-warn", "canceled": "dot-bad"}
+
 
 def _render_client_row(client: sqlite3.Row, snapshots: list[sqlite3.Row]) -> str:
+    status = client["card_status"]
     if snapshots:
         first, latest = snapshots[0], snapshots[-1]
         gain = latest["review_count"] - first["review_count"]
-        gain_str = f"+{gain}" if gain >= 0 else str(gain)
-        growth = f'{gain_str} reviews ({first["review_count"]}→{latest["review_count"]}) · {latest["average_rating"]:.1f}★'
+        arrow = "↑" if gain > 0 else ("↓" if gain < 0 else "→")
+        growth_class = "growth-up" if gain > 0 else "growth-flat"
+        growth = (
+            f'<span class="growth {growth_class}">{arrow} {gain:+d} reviews</span> '
+            f'<span class="growth-detail">({first["review_count"]}→{latest["review_count"]}, '
+            f'{latest["average_rating"]:.1f}★)</span>'
+        )
     else:
-        growth = "no snapshots yet"
+        growth = '<span class="empty">no snapshots yet</span>'
     return (
         "      <tr>"
-        f'<td>{escape(client["business_name"])}</td>'
-        f'<td><span class="status status-{escape(client["card_status"])}">{escape(client["card_status"])}</span></td>'
-        f'<td>${client["monthly_rate"]}/mo</td>'
-        f"<td>{escape(growth)}</td>"
+        f'<td class="biz">{escape(client["business_name"])}</td>'
+        f'<td><span class="status"><span class="dot {_STATUS_DOT[status]}"></span>{escape(status)}</span></td>'
+        f'<td class="rate">${client["monthly_rate"]}/mo</td>'
+        f"<td>{growth}</td>"
         "</tr>"
     )
 
@@ -343,12 +389,13 @@ class ClientTracker:
             _render_client_row(client, snapshots) for client, snapshots in client_rows
         )
         if not table_rows:
-            table_rows = '<tr><td colspan="4" class="empty">No clients yet.</td></tr>'
+            table_rows = '      <tr><td colspan="4" class="empty">No clients yet.</td></tr>'
 
         return _DASHBOARD_TEMPLATE.format(
             generated_at=generated_at,
             mrr=mrr,
             total_clients=len(client_rows),
+            plural="" if len(client_rows) == 1 else "s",
             active_count=status_counts["active"],
             paused_count=status_counts["paused"],
             canceled_count=status_counts["canceled"],
