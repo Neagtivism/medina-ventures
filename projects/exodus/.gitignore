@@ -1,1 +1,6 @@
 data/*.db
+# Generated locally by `generate-dashboard`. Contains real client PII
+# (names, contact info, revenue) once real data exists — this repo is
+# public, and Pages now publishes all of projects/exodus/. Do not
+# commit until real login-gating is in place (see CLAUDE.md).
+dashboard.html
