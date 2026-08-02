@@ -16,20 +16,53 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import random
 import sys
+import time
 import urllib.error
 import urllib.request
 import uuid
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional, TypeVar
 
 DEFAULT_MODEL_ID = "fal-ai/flux/dev"
 DEFAULT_IMAGE_DIR = Path(__file__).resolve().parent.parent / "data" / "images"
 METADATA_PATH = Path(__file__).resolve().parent.parent / "metadata.json"
 
+RETRY_ATTEMPTS = 4
+RETRY_BASE_DELAY_SECONDS = 1.0
+RETRY_MAX_DELAY_SECONDS = 20.0
+
+T = TypeVar("T")
+
 
 class FalAPIError(RuntimeError):
     pass
+
+
+def _is_retryable_http_error(error: urllib.error.HTTPError) -> bool:
+    return error.code == 429 or 500 <= error.code < 600
+
+
+def _with_retry(func: Callable[[], T]) -> T:
+    """Retry transient network failures (timeouts, connection errors, 429/5xx)
+    with exponential backoff. Auth/validation errors (4xx other than 429) fail
+    immediately — retrying those just burns quota for no benefit."""
+    last_error: Optional[BaseException] = None
+    for attempt in range(RETRY_ATTEMPTS):
+        try:
+            return func()
+        except urllib.error.HTTPError as e:
+            if not _is_retryable_http_error(e) or attempt == RETRY_ATTEMPTS - 1:
+                raise
+            last_error = e
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            if attempt == RETRY_ATTEMPTS - 1:
+                raise
+            last_error = e
+        delay = min(RETRY_MAX_DELAY_SECONDS, RETRY_BASE_DELAY_SECONDS * (2**attempt))
+        time.sleep(delay + random.uniform(0, 0.5))
+    raise last_error  # pragma: no cover — loop always returns or raises above
 
 
 class ImageGenerator:
@@ -50,21 +83,39 @@ class ImageGenerator:
     def _request(self, payload: dict) -> dict:
         url = f"https://fal.run/{self.model_id}"
         body = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(
-            url,
-            data=body,
-            method="POST",
-            headers={
-                "Authorization": f"Key {self.api_key}",
-                "Content-Type": "application/json",
-            },
-        )
-        try:
+
+        def do_request() -> dict:
+            req = urllib.request.Request(
+                url,
+                data=body,
+                method="POST",
+                headers={
+                    "Authorization": f"Key {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+            )
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 return json.loads(resp.read().decode("utf-8"))
+
+        try:
+            return _with_retry(do_request)
         except urllib.error.HTTPError as e:
             detail = e.read().decode("utf-8", errors="replace")
             raise FalAPIError(f"fal.ai request failed ({e.code}): {detail}") from e
+        except urllib.error.URLError as e:
+            raise FalAPIError(f"fal.ai request failed (network error): {e}") from e
+
+    def _download(self, url: str, out_path: Path) -> None:
+        def do_download() -> bytes:
+            with urllib.request.urlopen(url, timeout=self.timeout) as resp:
+                return resp.read()
+
+        try:
+            data = _with_retry(do_download)
+        except (urllib.error.URLError, urllib.error.HTTPError) as e:
+            raise FalAPIError(f"image download failed: {e}") from e
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_bytes(data)
 
     def generate_image(self, prompt: str, out_path: Path) -> Path:
         payload: dict = {"prompt": prompt}
@@ -74,10 +125,7 @@ class ImageGenerator:
         images = result.get("images") or []
         if not images:
             raise FalAPIError(f"No images returned: {result}")
-        image_url = images[0]["url"]
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        with urllib.request.urlopen(image_url, timeout=self.timeout) as img_resp:
-            out_path.write_bytes(img_resp.read())
+        self._download(images[0]["url"], out_path)
         return out_path
 
 
@@ -135,11 +183,19 @@ def _cli() -> None:
         controller = QueueController(args.db)
         pending = controller.list_pending_without_image()
         image_dir = args.db.parent / "images"
+        failures = 0
         for item in pending:
             out_path = image_dir / f"{item.id}_{uuid.uuid4().hex[:8]}.png"
-            saved = generator.generate_image(item.image_prompt, out_path)
+            try:
+                saved = generator.generate_image(item.image_prompt, out_path)
+            except FalAPIError as e:
+                failures += 1
+                print(f"content_id={item.id} FAILED (will retry next run): {e}", file=sys.stderr)
+                continue
             controller.set_image_path(item.id, str(saved))
             print(f"content_id={item.id} -> {saved}")
+        if failures:
+            print(f"{failures}/{len(pending)} items failed after retries", file=sys.stderr)
 
 
 if __name__ == "__main__":
