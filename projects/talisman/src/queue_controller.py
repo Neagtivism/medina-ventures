@@ -51,6 +51,21 @@ CREATE TABLE IF NOT EXISTS sponsorships (
     due_date        TEXT,
     created_at      TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Matches list_pending()'s WHERE status = ? ORDER BY scheduled_time.
+CREATE INDEX IF NOT EXISTS idx_content_queue_status_scheduled
+    ON content_queue(status, scheduled_time);
+CREATE INDEX IF NOT EXISTS idx_content_queue_platform
+    ON content_queue(platform);
+-- FK lookups from post_metrics -> content_queue, and the monthly summary's
+-- strftime('%Y-%m', recorded_at) scan.
+CREATE INDEX IF NOT EXISTS idx_post_metrics_content_id
+    ON post_metrics(content_id);
+CREATE INDEX IF NOT EXISTS idx_post_metrics_recorded_at
+    ON post_metrics(recorded_at);
+-- Matches monthly_revenue_summary()'s WHERE status = 'paid' AND due_date scan.
+CREATE INDEX IF NOT EXISTS idx_sponsorships_status_due
+    ON sponsorships(status, due_date);
 """
 
 
