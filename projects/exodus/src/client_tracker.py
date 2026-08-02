@@ -363,6 +363,25 @@ class ClientTracker:
             ).fetchone()["total"]
         return total
 
+    def clients_with_stripe_subscription(self) -> list[Client]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT * FROM clients WHERE stripe_subscription_id IS NOT NULL"
+            ).fetchall()
+        return [Client(**dict(row)) for row in rows]
+
+    def update_card_status(self, client_id: str, card_status: str) -> None:
+        try:
+            with self._connect() as conn:
+                cur = conn.execute(
+                    "UPDATE clients SET card_status = ? WHERE client_id = ?",
+                    (card_status, client_id),
+                )
+                if cur.rowcount == 0:
+                    raise ClientError(f"no such client: '{client_id}'")
+        except sqlite3.IntegrityError as e:
+            raise ClientError(f"could not update status for '{client_id}': {e}") from e
+
     def generate_dashboard_html(self) -> str:
         with self._connect() as conn:
             clients = conn.execute(
