@@ -13,11 +13,13 @@ import sqlite3
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timezone
+from html import escape
 from pathlib import Path
 from typing import Callable, Iterator, Optional, TypeVar
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "exodus.db"
+DEFAULT_DASHBOARD_PATH = Path(__file__).resolve().parent.parent / "dashboard.html"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS clients (
@@ -103,6 +105,99 @@ class ReviewSnapshot:
     snapshot_date: str
     review_count: int
     average_rating: float
+
+
+_DASHBOARD_TEMPLATE = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exodus Dashboard</title>
+<style>
+  :root {{
+    --bg: #f7f7f5; --surface: #ffffff; --border: #e5e5e0;
+    --text: #1a1a1a; --text-muted: #6b6b66; --accent: #2f6f4f;
+  }}
+  @media (prefers-color-scheme: dark) {{
+    :root {{
+      --bg: #121212; --surface: #1a1a1a; --border: #2e2e2e;
+      --text: #f2f2f0; --text-muted: #9a9a95; --accent: #7fd9a8;
+    }}
+  }}
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 32px 20px; line-height: 1.5;
+  }}
+  .container {{ max-width: 880px; margin: 0 auto; }}
+  h1 {{ font-size: 1.4rem; margin-bottom: 4px; }}
+  .subtitle {{ color: var(--text-muted); font-size: 0.85rem; margin-bottom: 28px; }}
+  .stats {{ display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }}
+  .stat-card {{
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; min-width: 140px; flex: 1;
+  }}
+  .stat-value {{ font-size: 1.6rem; font-weight: 600; color: var(--accent); }}
+  .stat-label {{ font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }}
+  table {{
+    width: 100%; border-collapse: collapse; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  }}
+  .table-wrap {{ overflow-x: auto; border-radius: 10px; }}
+  th, td {{ text-align: left; padding: 10px 14px; font-size: 0.88rem; border-bottom: 1px solid var(--border); }}
+  th {{ color: var(--text-muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }}
+  tr:last-child td {{ border-bottom: none; }}
+  .status {{ padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; }}
+  .status-active {{ background: rgba(47,111,79,0.15); color: var(--accent); }}
+  .status-paused {{ background: rgba(180,140,20,0.15); color: #b48c14; }}
+  .status-canceled {{ background: rgba(180,40,40,0.15); color: #b42828; }}
+  .empty {{ color: var(--text-muted); text-align: center; padding: 24px; }}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Exodus — Client Dashboard</h1>
+  <div class="subtitle">Generated {generated_at} · read-only snapshot</div>
+  <div class="stats">
+    <div class="stat-card"><div class="stat-value">${mrr}</div><div class="stat-label">MRR</div></div>
+    <div class="stat-card"><div class="stat-value">{total_clients}</div><div class="stat-label">Total clients</div></div>
+    <div class="stat-card"><div class="stat-value">{active_count}</div><div class="stat-label">Active</div></div>
+    <div class="stat-card"><div class="stat-value">{paused_count}</div><div class="stat-label">Paused</div></div>
+    <div class="stat-card"><div class="stat-value">{canceled_count}</div><div class="stat-label">Canceled</div></div>
+  </div>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Business</th><th>Status</th><th>Rate</th><th>Review growth</th></tr>
+    </thead>
+    <tbody>
+{table_rows}
+    </tbody>
+  </table>
+  </div>
+</div>
+</body>
+</html>
+"""
+
+
+def _render_client_row(client: sqlite3.Row, snapshots: list[sqlite3.Row]) -> str:
+    if snapshots:
+        first, latest = snapshots[0], snapshots[-1]
+        gain = latest["review_count"] - first["review_count"]
+        gain_str = f"+{gain}" if gain >= 0 else str(gain)
+        growth = f'{gain_str} reviews ({first["review_count"]}→{latest["review_count"]}) · {latest["average_rating"]:.1f}★'
+    else:
+        growth = "no snapshots yet"
+    return (
+        "      <tr>"
+        f'<td>{escape(client["business_name"])}</td>'
+        f'<td><span class="status status-{escape(client["card_status"])}">{escape(client["card_status"])}</span></td>'
+        f'<td>${client["monthly_rate"]}/mo</td>'
+        f"<td>{escape(growth)}</td>"
+        "</tr>"
+    )
 
 
 class ClientTracker:
@@ -222,6 +317,44 @@ class ClientTracker:
             ).fetchone()["total"]
         return total
 
+    def generate_dashboard_html(self) -> str:
+        with self._connect() as conn:
+            clients = conn.execute(
+                "SELECT * FROM clients ORDER BY business_name ASC"
+            ).fetchall()
+            client_rows = []
+            for client in clients:
+                snapshots = conn.execute(
+                    """SELECT snapshot_date, review_count, average_rating
+                       FROM review_snapshots WHERE client_id = ?
+                       ORDER BY snapshot_date ASC""",
+                    (client["client_id"],),
+                ).fetchall()
+                client_rows.append((client, snapshots))
+
+        status_counts = {"active": 0, "paused": 0, "canceled": 0}
+        for client, _ in client_rows:
+            status_counts[client["card_status"]] = status_counts.get(client["card_status"], 0) + 1
+
+        mrr = self.get_mrr()
+        generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+        table_rows = "\n".join(
+            _render_client_row(client, snapshots) for client, snapshots in client_rows
+        )
+        if not table_rows:
+            table_rows = '<tr><td colspan="4" class="empty">No clients yet.</td></tr>'
+
+        return _DASHBOARD_TEMPLATE.format(
+            generated_at=generated_at,
+            mrr=mrr,
+            total_clients=len(client_rows),
+            active_count=status_counts["active"],
+            paused_count=status_counts["paused"],
+            canceled_count=status_counts["canceled"],
+            table_rows=table_rows,
+        )
+
 
 def _cli() -> None:
     parser = argparse.ArgumentParser(description="Project Exodus client tracker")
@@ -250,6 +383,11 @@ def _cli() -> None:
 
     sub.add_parser("mrr", help="Total monthly recurring revenue across active clients")
 
+    p_dash = sub.add_parser(
+        "generate-dashboard", help="Render a static read-only HTML dashboard"
+    )
+    p_dash.add_argument("--out", type=Path, default=DEFAULT_DASHBOARD_PATH)
+
     args = parser.parse_args()
     tracker = ClientTracker(args.db)
 
@@ -276,6 +414,10 @@ def _cli() -> None:
             print(json.dumps(tracker.get_client_report(args.client_id), indent=2))
         elif args.command == "mrr":
             print(f"${tracker.get_mrr()}/month across active clients")
+        elif args.command == "generate-dashboard":
+            html = tracker.generate_dashboard_html()
+            args.out.write_text(html)
+            print(f"dashboard written to {args.out}")
     except ClientError as e:
         parser.exit(1, f"error: {e}\n")
 

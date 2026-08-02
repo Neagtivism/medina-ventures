@@ -3,7 +3,8 @@
 ## Holding structure
 
 Two unrelated business lines under one repo, sharing no runtime infrastructure:
-- `projects/exodus/` — local B2B services (NFC review cards → analytics retainer → high-ticket upsells). Currently a landing page plus `outreach/` (cold-pitch scripts + lead-tracker template, written for VA hand-off) — still no CRM/billing/ops code, so beyond outreach documentation there's nothing here to audit as "system."
+- `projects/exodus/` — local B2B services (NFC review cards → analytics retainer → high-ticket upsells). Landing page (deployed via `.github/workflows/pages-deploy.yml`, publishing this directory only — see note below), `outreach/` (cold-pitch scripts + lead-tracker template, VA hand-off), and `src/client_tracker.py` (SQLite client/MRR tracker + `generate-dashboard`).
+- **Public repo, no login on the site yet.** `dashboard.html` is generated locally by `client_tracker.py generate-dashboard` and is gitignored — do not commit or otherwise publish it until real access control (Cloudflare Access or Basic Auth) is in front of it. It will contain client PII (names, contact info, revenue) the moment real client data exists, and everything in `projects/exodus/` is now served publicly by GitHub Pages.
 - `projects/talisman/` — AI influencer agency, self-contained SQLite + Python pipeline. See `projects/talisman/CLAUDE.md` for its own architecture and roadmap.
 
 Zero shared infrastructure between the two means a failure in one (e.g. Talisman's Pi going down) cannot cascade into the other — a genuine resilience property of this structure, not just cost minimization. The actual shared constraint is founder attention/time, not technical coupling.
