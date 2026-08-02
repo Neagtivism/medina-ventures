@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS content_queue (
     image_prompt    TEXT NOT NULL,
     scheduled_time  TEXT NOT NULL,
     status          TEXT NOT NULL DEFAULT 'pending',
+    image_path      TEXT,
     posted_at       TEXT,
     created_at      TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -61,6 +62,7 @@ class ContentItem:
     image_prompt: str
     scheduled_time: str
     status: str
+    image_path: Optional[str]
     posted_at: Optional[str]
 
 
@@ -70,6 +72,9 @@ class QueueController:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as conn:
             conn.executescript(SCHEMA)
+            columns = {row["name"] for row in conn.execute("PRAGMA table_info(content_queue)")}
+            if "image_path" not in columns:
+                conn.execute("ALTER TABLE content_queue ADD COLUMN image_path TEXT")
 
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
@@ -93,11 +98,12 @@ class QueueController:
             )
             return cur.lastrowid
 
+    _CONTENT_COLUMNS = (
+        "id, platform, caption, image_prompt, scheduled_time, status, image_path, posted_at"
+    )
+
     def list_pending(self, platform: Optional[str] = None) -> list[ContentItem]:
-        query = (
-            "SELECT id, platform, caption, image_prompt, scheduled_time, status, posted_at "
-            "FROM content_queue WHERE status = 'pending'"
-        )
+        query = f"SELECT {self._CONTENT_COLUMNS} FROM content_queue WHERE status = 'pending'"
         params: tuple = ()
         if platform:
             query += " AND platform = ?"
@@ -106,6 +112,22 @@ class QueueController:
         with self._connect() as conn:
             rows = conn.execute(query, params).fetchall()
         return [ContentItem(**dict(row)) for row in rows]
+
+    def list_pending_without_image(self) -> list[ContentItem]:
+        query = (
+            f"SELECT {self._CONTENT_COLUMNS} FROM content_queue "
+            "WHERE status = 'pending' AND image_path IS NULL ORDER BY scheduled_time ASC"
+        )
+        with self._connect() as conn:
+            rows = conn.execute(query).fetchall()
+        return [ContentItem(**dict(row)) for row in rows]
+
+    def set_image_path(self, content_id: int, image_path: str) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                "UPDATE content_queue SET image_path = ? WHERE id = ?",
+                (image_path, content_id),
+            )
 
     def mark_posted(self, content_id: int) -> None:
         with self._connect() as conn:
