@@ -315,6 +315,17 @@
           <span class="contact-label">Phone</span>&nbsp; (516) 690-6289
         </a>
       </div>
+      <!--
+        TODO: replace with the real Stripe Payment Link once created at
+        https://dashboard.stripe.com/payment-links (no code needed there).
+        After a client subscribes through it, add them to the tracker:
+          python3 projects/exodus/src/client_tracker.py add-client \
+            --client-id <slug> --business-name "..." \
+            --stripe-subscription-id <sub_...> --monthly-rate 25
+      -->
+      <div style="margin-top:32px;">
+        <a href="#" class="btn btn-primary" id="start-retainer">Start Your Retainer</a>
+      </div>
     </div>
   </section>
 
