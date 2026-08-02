@@ -1,15 +1,60 @@
 {
-  "model": {
-    "name": "",
-    "physical_attributes": {
-      "height": "",
-      "build": "",
-      "hair_color": "",
-      "hair_style": "",
-      "eye_color": "",
-      "skin_tone": "",
-      "age_range": "",
-      "distinguishing_features": ""
-    }
+  "identity": {
+    "name": "Mika Reign",
+    "handle": "@mikareign",
+    "type": "synthetic_influencer",
+    "is_real_person": false,
+    "age_range": "21-24",
+    "base_location": "New York City, NY",
+    "note": "Original fictional persona. Name/handle are placeholders — verify trademark and cross-platform handle availability before launch."
+  },
+  "visual_profile": {
+    "heritage": "Multi-ethnic Blasian / Afro-Latina background: East Asian, Haitian, and Afro-Puerto Rican.",
+    "facial_features": {
+      "eyes": "feline-shaped, dark brown",
+      "cheekbones": "high, sculpted",
+      "lips": "full, symmetrical",
+      "jawline": "sharp, defined",
+      "skin_tone": "warm deep bronze"
+    },
+    "silhouette": "toned athletic hourglass",
+    "height": "5'7\"",
+    "build": "elite athletic, gym-conditioned",
+    "styling": {
+      "primary": "high-end Soho streetwear",
+      "secondary": "minimalist gym athleisure",
+      "signature_details": ["gold hoop earrings", "slicked-back low bun", "neutral manicure"]
+    },
+    "image_prompt_anchors": [
+      "23-year-old woman, Blasian and Afro-Latina heritage, feline-shaped dark eyes, high cheekbones, full symmetrical lips, sharp jawline, warm deep bronze skin",
+      "toned athletic hourglass silhouette, 5'7\"",
+      "styled in high-end Soho streetwear: oversized blazer, cropped top, tailored trousers, gold hoops",
+      "alt look: minimalist gym athleisure, matching set, slicked-back bun",
+      "NYC backdrop: SoHo cast-iron storefronts, rooftop skyline, boutique gym"
+    ]
+  },
+  "lore": {
+    "backstory": "Grew up between Brooklyn and the Lower East Side; family roots span Port-au-Prince, San Juan, and Seoul. Started posting style edits in college, broke out with a viral SoHo street-style series.",
+    "personality_traits": ["confident", "dry humor", "detail-obsessed about fit", "early riser / gym-first routine"],
+    "voice_and_tone": "Direct, witty, low-key luxury — short captions, no exclamation-point spam, occasional bilingual (Spanish/Kreyòl) phrase drops."
+  },
+  "niche": {
+    "primary": "premium lifestyle",
+    "secondary": ["streetwear fashion", "fitness/athleisure", "NYC culture"],
+    "content_pillars": ["outfit-of-the-day", "gym/training clips", "brand unboxings", "day-in-the-life"]
+  },
+  "monetization": {
+    "target_monthly_baseline_usd": 3000,
+    "revenue_streams": [
+      { "type": "sponsored_post", "est_rate_usd": "600-1200", "cadence": "2-3/month" },
+      { "type": "affiliate_links", "est_monthly_usd": "150-400" },
+      { "type": "brand_retainer", "est_monthly_usd": "500-1000", "note": "1 anchor retainer once engagement baseline is proven" }
+    ]
+  },
+  "compliance": {
+    "ai_disclosure_required": true,
+    "bio_disclosure_text": "Digital creator · AI-generated persona",
+    "sponsored_post_disclosure_tag": "#ad",
+    "notes": "Apply platform-native synthetic-media / branded-content labels (Meta, TikTok, YouTube) on every post from day one, in addition to the bio disclosure and #ad tag on sponsored content, per FTC Endorsement Guides."
   }
 }
