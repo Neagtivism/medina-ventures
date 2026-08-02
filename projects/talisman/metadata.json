@@ -1,0 +1,15 @@
+{
+  "model": {
+    "name": "",
+    "physical_attributes": {
+      "height": "",
+      "build": "",
+      "hair_color": "",
+      "hair_style": "",
+      "eye_color": "",
+      "skin_tone": "",
+      "age_range": "",
+      "distinguishing_features": ""
+    }
+  }
+}
