@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Holding structure
+
+- `projects/exodus/` — local B2B services (NFC review cards → analytics retainer → high-ticket upsells). Currently a landing page only; no CRM/billing/ops code exists yet, so there's nothing here to audit as "system" beyond the marketing site.
+
 ## gstack
 
 Use the `/browse` skill from [gstack](https://github.com/garrytan/gstack) for all web browsing in this project. Never use `mcp__claude-in-chrome__*` tools.
