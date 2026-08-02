@@ -1,12 +1,13 @@
 {
   "identity": {
     "name": "Mika Reign",
-    "handle": "@mikareign",
+    "handle": "@mikareign_",
+    "instagram": "https://instagram.com/mikareign_",
     "type": "synthetic_influencer",
     "is_real_person": false,
     "age_range": "21-24",
     "base_location": "New York City, NY",
-    "note": "Original fictional persona. Name/handle are placeholders — verify trademark and cross-platform handle availability before launch."
+    "note": "Original fictional persona. Instagram handle live as of 2026-08-02. Add the AI-disclosure bio text from compliance.bio_disclosure_text before the first post."
   },
   "visual_profile": {
     "heritage": "Multi-ethnic Blasian / Afro-Latina background: East Asian, Haitian, and Afro-Puerto Rican.",
