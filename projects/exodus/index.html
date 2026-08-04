@@ -8,13 +8,16 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f1526'/%3E%3Ctext x='32' y='45' font-family='Georgia, serif' font-size='34' fill='%23c9a468' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E">
 <style>
   :root{
-    --bg:#0a0a0c;
-    --surface:#0e1424;
-    --surface-border:rgba(201,164,104,0.14);
-    --gold:#c9a468;
-    --gold-bright:#ddc08a;
-    --text:#f2f0ea;
-    --text-muted:#98a0b3;
+    --bg:#faf7f0;
+    --surface:#ffffff;
+    --surface-border:rgba(14,20,36,0.1);
+    --navy:#0e1424;
+    --navy-deep:#0a0a0c;
+    --gold:#b8863f;
+    --gold-bright:#c9a468;
+    --gold-text:#8a6329; /* AA-legible variant — --gold/--gold-bright are for buttons, borders, and lines (backed by navy text or plain decoration), not for readable text on the light background */
+    --text:#1a2035;
+    --text-muted:#5c6478;
     --font-serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
     --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   }
@@ -43,7 +46,7 @@
     position:sticky;
     top:0;
     z-index:10;
-    background:rgba(10,10,12,0.72);
+    background:rgba(250,247,240,0.82);
     backdrop-filter:blur(8px);
     -webkit-backdrop-filter:blur(8px);
     border-bottom:1px solid transparent;
@@ -65,13 +68,27 @@
     text-decoration:none;
   }
   .topbar a.cta-link{
+    position:relative;
     font-size:0.9rem;
     color:var(--text-muted);
     text-decoration:none;
     letter-spacing:0.02em;
     transition:color 0.2s ease;
   }
-  .topbar a.cta-link:hover{color:var(--gold-bright);}
+  .topbar a.cta-link::after{
+    content:'';
+    position:absolute;
+    left:0;
+    bottom:-3px;
+    width:100%;
+    height:1px;
+    background:var(--gold);
+    transform:scaleX(0);
+    transform-origin:right;
+    transition:transform 0.3s ease;
+  }
+  .topbar a.cta-link:hover{color:var(--gold-text);}
+  .topbar a.cta-link:hover::after{transform:scaleX(1);transform-origin:left;}
 
   /* Hero */
   .hero{
@@ -83,10 +100,24 @@
     text-align:center;
     padding:8vh 24px 10vh;
     background:
-      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(201,164,104,0.07), transparent 65%),
-      radial-gradient(ellipse 70% 60% at 50% 100%, rgba(20,32,64,0.5), transparent 70%),
+      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(184,134,63,0.10), transparent 65%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, rgba(14,20,36,0.05), transparent 70%),
       var(--bg);
   }
+
+  @keyframes fadeUp{
+    from{opacity:0; transform:translateY(14px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .hero > *{
+    opacity:0;
+    animation:fadeUp 0.7s ease-out forwards;
+  }
+  .hero .wordmark{animation-delay:0.05s;}
+  .hero .divider{animation-delay:0.25s;}
+  .hero .tagline{animation-delay:0.4s;}
+  .hero .btn{animation-delay:0.55s;}
+
   .wordmark{
     font-family:var(--font-serif);
     font-weight:400;
@@ -110,6 +141,7 @@
   }
 
   .btn{
+    position:relative;
     display:inline-block;
     padding:14px 34px;
     font-size:0.95rem;
@@ -117,10 +149,11 @@
     text-decoration:none;
     border-radius:2px;
     transition:all 0.2s ease;
+    overflow:hidden;
   }
   .btn-primary{
     background:var(--gold);
-    color:#0a0a0c;
+    color:var(--navy-deep);
     font-weight:600;
     border:1px solid var(--gold);
   }
@@ -128,6 +161,18 @@
     background:var(--gold-bright);
     border-color:var(--gold-bright);
   }
+  .btn-primary::before{
+    content:'';
+    position:absolute;
+    top:0;
+    left:-120%;
+    width:60%;
+    height:100%;
+    background:linear-gradient(115deg, transparent, rgba(255,255,255,0.55), transparent);
+    transform:skewX(-20deg);
+    transition:left 0.6s ease;
+  }
+  .btn-primary:hover::before{left:130%;}
 
   /* Sections */
   .section{
@@ -215,10 +260,10 @@
   }
   .contact-item:hover{
     border-color:var(--gold);
-    color:var(--gold-bright);
+    color:var(--gold-text);
   }
   .contact-label{
-    color:var(--gold);
+    color:var(--gold-text);
     font-size:0.75rem;
     letter-spacing:0.1em;
     text-transform:uppercase;
@@ -242,7 +287,9 @@
 
   @media (prefers-reduced-motion: reduce){
     html{scroll-behavior:auto;}
-    *{transition:none !important;}
+    *{transition:none !important; animation:none !important;}
+    .hero > *{opacity:1;}
+    .btn-primary::before{display:none;}
   }
 
   a:focus-visible, .card:focus-within{
