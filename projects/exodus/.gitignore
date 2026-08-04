@@ -1,0 +1,15 @@
+data/*.db
+# Generated locally by `generate-dashboard`. Contains real client PII
+# (names, contact info, revenue) once real data exists — this repo is
+# public, and Pages now publishes all of projects/exodus/. Do not
+# commit until real login-gating is in place (see CLAUDE.md).
+dashboard.html
+# Same reasoning: leadgen/ output holds real business names, addresses,
+# and phone numbers scraped on demand. leadgen/ lives inside
+# projects/exodus/, which GitHub Pages now publishes in full — never
+# commit generated leads/reports to a public repo.
+leadgen/leads_pass.json
+leadgen/report.md
+leadgen/*.json
+leadgen/*.md
+!leadgen/README.md
