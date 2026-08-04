@@ -14,6 +14,6 @@ jobs:
           python-version: "3.11"
       - name: Compile check
         run: |
-          python3 -m py_compile projects/exodus/src/*.py projects/talisman/src/*.py
+          python3 -m py_compile projects/exodus/src/*.py projects/exodus/leadgen/*.py projects/talisman/src/*.py
       - name: Run tests
         run: python3 -m unittest discover -s tests -p "test_*.py" -v
