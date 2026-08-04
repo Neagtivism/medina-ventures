@@ -13,6 +13,10 @@
     --surface-border:rgba(14,20,36,0.1);
     --navy:#0e1424;
     --navy-deep:#0a0a0c;
+    --navy-surface:#141b2d;
+    --text-on-navy:#f2f0ea;
+    --text-muted-on-navy:#98a0b3;
+    --border-on-navy:rgba(201,164,104,0.16);
     --gold:#b8863f;
     --gold-bright:#c9a468;
     --gold-text:#8a6329; /* AA-legible variant — --gold/--gold-bright are for buttons, borders, and lines (backed by navy text or plain decoration), not for readable text on the light background */
@@ -179,10 +183,12 @@
     padding:110px 24px;
   }
   .section-alt{
-    background:var(--surface);
-    border-top:1px solid var(--surface-border);
-    border-bottom:1px solid var(--surface-border);
+    background:var(--navy);
+    color:var(--text-on-navy);
   }
+  .section-alt .section-heading{color:var(--text-on-navy);}
+  .section-alt .section-heading-rule{background:var(--gold-bright);}
+  .section-alt .section-body{color:var(--text-muted-on-navy);}
   .section-heading{
     font-family:var(--font-serif);
     font-size:clamp(1.6rem, 3vw, 2.1rem);
@@ -211,20 +217,20 @@
     display:grid;
     grid-template-columns:repeat(3, 1fr);
     gap:1px;
-    background:var(--surface-border);
+    background:var(--border-on-navy);
     max-width:960px;
     margin:0 auto;
-    border:1px solid var(--surface-border);
+    border:1px solid var(--border-on-navy);
   }
   .card{
-    background:var(--bg);
+    background:var(--navy-surface);
     padding:44px 32px 40px;
     text-align:left;
     border-top:2px solid transparent;
     transition:border-color 0.25s ease;
   }
   .card:hover, .card:focus-within{
-    border-top-color:var(--gold);
+    border-top-color:var(--gold-bright);
   }
   .card h3{
     font-family:var(--font-serif);
@@ -232,9 +238,10 @@
     font-size:1.25rem;
     margin-bottom:12px;
     text-wrap:balance;
+    color:var(--text-on-navy);
   }
   .card p{
-    color:var(--text-muted);
+    color:var(--text-muted-on-navy);
     font-size:0.96rem;
   }
 
@@ -271,12 +278,12 @@
 
   /* Footer */
   footer{
+    background:var(--navy);
     padding:36px 24px;
     text-align:center;
-    color:var(--text-muted);
+    color:var(--text-muted-on-navy);
     font-size:0.82rem;
     letter-spacing:0.03em;
-    border-top:1px solid var(--surface-border);
   }
 
   @media (max-width:760px){
