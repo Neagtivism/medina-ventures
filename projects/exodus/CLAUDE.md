@@ -11,7 +11,7 @@ Local B2B services: physical Google Review NFC cards → monthly analytics retai
   - `past_due`, `unpaid`, `paused`, `incomplete`, and any unrecognized future status → `paused` (surfaces for a human to check rather than silently staying "active")
   - `canceled`, `incomplete_expired` → `canceled`
   - `sync` command updates every client with a `stripe_subscription_id`; clients without one (e.g. paying by other means) are left untouched. Per-client failures (e.g. a deleted subscription) are isolated — one bad lookup doesn't stop the rest of the sync.
-- **Onboarding:** a Stripe Payment Link (created no-code in the Stripe dashboard) is the onboarding path from the site — not a server-side Checkout flow. GitHub Pages is static-only and cannot safely hold a Stripe secret key, so there's no backend here by design. The `#start-retainer` button in `index.html` has a placeholder `href="#"` with a `TODO` comment marking where the real Payment Link URL goes once created.
+- **Onboarding:** a Stripe Payment Link (created no-code in the Stripe dashboard) is the onboarding path from the site — not a server-side Checkout flow. GitHub Pages is static-only and cannot safely hold a Stripe secret key, so there's no backend here by design. The site currently has no onboarding CTA button (removed per design feedback); add one back with the real Payment Link URL once it's created.
 - **After a real signup:** Stripe notifies you; add the client manually via `add-client` with the real `stripe_subscription_id`. This is intentionally manual at current volume — automating client creation from Stripe webhooks needs a persistent server (Pages can't run one) and isn't worth building before there's a queue of signups to justify it.
 
 ## Public repo — no login on the site yet
